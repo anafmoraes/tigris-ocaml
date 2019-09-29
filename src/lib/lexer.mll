@@ -100,7 +100,7 @@ and string pos = parse
                          let text = Buffer.contents string_buffer in
                          Buffer.clear string_buffer;
                          STRING text }
-|'\\' '/'              { Buffer.add_char string_buffer '/'; string pos lexbuf }
+|"\\\""              { Buffer.add_char string_buffer '/'; string pos lexbuf }
 | '\\' '\\'            { Buffer.add_char string_buffer '\\'; string pos lexbuf }
 | '\\' 'b'             { Buffer.add_char string_buffer '\b'; string pos lexbuf }
 | '\\' 'f'             { Buffer.add_char string_buffer '\012'; string pos lexbuf }
@@ -108,14 +108,14 @@ and string pos = parse
 | '\\' 'r'             { Buffer.add_char string_buffer '\r'; string pos lexbuf }
 | '\\' 'v'             { Buffer.add_char string_buffer '\v'; string pos lexbuf }
 | "\\" (digit digit digit as x) { string pos (append_char buf (int_of_string x)) lexbuf }
-| "\\t"                { Buffer.add_char string_buffer '\t';
+| '\\' 't'               { Buffer.add_char string_buffer '\t';
                          string pos lexbuf }
-(* add the other escape sequences *)
-(* report error on invalid escape sequence *)
+| '\\' '^' (['A'-'Z' '@' '[' '\\' ']' '^' '_' '?'] as c)     { Buffer.add_char string_buffer c; string pos lexbuf }
 | [^ '\\' '"']+ as lxm { str_incr_linenum lxm lexbuf;
                          Buffer.add_string string_buffer lxm;
                          string pos lexbuf }
-(* report error on eof *)
+| eof                  { illegal_escape (Location.curr_loc lexbuf) }
+
 and comment_lexer size =
       parse
       | "{#" { comment_lexer (size+1) lexbuf }
