@@ -50,7 +50,7 @@ rule token = parse
   | litint as lxm { INTEGER (int_of_string lxm) }
   | id as lxm     { ID (Symbol.symbol lxm) }
   | real as lxm   { REAL (float_of_string lxm) }
-  | bool as lxm   { BOOL (bool_of_string lxm) }
+  | bool as lxm   { LOGIC (bool_of_string lxm) }
   | '"'           { string lexbuf.L.lex_start_p lexbuf }
   | "for"         { FOR }
   | "while"       { WHILE }
