@@ -34,7 +34,12 @@ let litint = digit +
 let alphanumeric = ['a'-'z' 'A'-'Z']+
 let id = alphanumeric + (alphanumeric|litint|'_')*
 
-let bool = ['t' 'f']
+let float = digit* ['.'] digit*
+let float1 = ( (digit+ "." digit*) | (digit* "." digit+) (['e' 'E'] ['+''-']? digit+)?)
+         | (digit+ ['e' 'E'] ['+''-']? digit+)
+let real = float1 +
+
+let bool = ("false"|"true")
 
 rule token = parse
   | spaces        { token lexbuf }
@@ -43,8 +48,9 @@ rule token = parse
   | "{#"          { comment_lexer 0 lexbuf}
   | "#"           { comment_line lexbuf}
   | litint as lxm { INTEGER (int_of_string lxm) }
-  | id as lxm     { ID lxm }
-  | bool as lxm   { BOOL lxm}
+  | id as lxm     { ID (Symbol.symbol lxm) }
+  | real as lxm   { REAL (float_of_string lxm) }
+  | bool as lxm   { BOOL (bool_of_string lxm) }
   | '"'           { string lexbuf.L.lex_start_p lexbuf }
   | "for"         { FOR }
   | "while"       { WHILE }
@@ -100,14 +106,17 @@ and string pos = parse
 | '\\' 'f'             { Buffer.add_char string_buffer '\012'; string pos lexbuf }
 | '\\' 'n'             { Buffer.add_char string_buffer '\n'; string pos lexbuf }
 | '\\' 'r'             { Buffer.add_char string_buffer '\r'; string pos lexbuf }
-| "\\t"                { Buffer.add_char string_buffer '\t';
+| '\\' 'v'             { Buffer.add_char string_buffer '\118'; string pos lexbuf }
+| '\\' 't'                { Buffer.add_char string_buffer '\t';
                          string pos lexbuf }
 (* add the other escape sequences *)
 (* report error on invalid escape sequence *)
 | [^ '\\' '"']+ as lxm { str_incr_linenum lxm lexbuf;
                          Buffer.add_string string_buffer lxm;
                          string pos lexbuf }
-(* report error on eof *)
+| eof                  { unterminated_string (Location.curr_loc lexbuf) }
+
+
 and comment_lexer size =
       parse
       | "{#" { comment_lexer (size+1) lexbuf }
@@ -118,4 +127,4 @@ and comment_line =
       parse
       | "\n" {  token lexbuf}
       | eof  { unterminated_comment (Location.curr_loc lexbuf) }
-      | _ { comment_line lexbuf }
+| _ { comment_line lexbuf }
