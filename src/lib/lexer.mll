@@ -34,12 +34,7 @@ let litint = digit +
 let alphanumeric = ['a'-'z' 'A'-'Z']+
 let id = alphanumeric + (alphanumeric|litint|'_')*
 
-let float = digit* ['.'] digit*
-let float1 = ( (digit+ "." digit*) | (digit* "." digit+) (['e' 'E'] ['+''-']? digit+)?)
-         | (digit+ ['e' 'E'] ['+''-']? digit+)
-let real = float1 +
-
-let bool = ("false"|"true")
+let bool = ['t' 'f']
 
 rule token = parse
   | spaces        { token lexbuf }
@@ -48,9 +43,8 @@ rule token = parse
   | "{#"          { comment_lexer 0 lexbuf}
   | "#"           { comment_line lexbuf}
   | litint as lxm { INTEGER (int_of_string lxm) }
-  | id as lxm     { ID (Symbol.symbol lxm) }
-  | real as lxm   { REAL (float_of_string lxm) }
-  | bool as lxm   { BOOL (bool_of_string lxm) }
+  | id as lxm     { ID lxm }
+  | bool as lxm   { BOOL lxm}
   | '"'           { string lexbuf.L.lex_start_p lexbuf }
   | "for"         { FOR }
   | "while"       { WHILE }
@@ -106,8 +100,6 @@ and string pos = parse
 | '\\' 'f'             { Buffer.add_char string_buffer '\012'; string pos lexbuf }
 | '\\' 'n'             { Buffer.add_char string_buffer '\n'; string pos lexbuf }
 | '\\' 'r'             { Buffer.add_char string_buffer '\r'; string pos lexbuf }
-| '\\' 'v'             { Buffer.add_char string_buffer '\v'; string pos lexbuf }
-| "\\" (digit digit digit as x) { string pos (append_char buf (int_of_string x)) lexbuf }
 | "\\t"                { Buffer.add_char string_buffer '\t';
                          string pos lexbuf }
 (* add the other escape sequences *)
@@ -115,9 +107,7 @@ and string pos = parse
 | [^ '\\' '"']+ as lxm { str_incr_linenum lxm lexbuf;
                          Buffer.add_string string_buffer lxm;
                          string pos lexbuf }
-| eof                  { unterminated_string (Location.curr_loc lexbuf) }
-
-
+(* report error on eof *)
 and comment_lexer size =
       parse
       | "{#" { comment_lexer (size+1) lexbuf }
