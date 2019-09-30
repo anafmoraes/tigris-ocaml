@@ -1,4 +1,0 @@
-# dune exec src/bin/driver.exe
-# OCAMLPARAM: unset
-$ /usr/bin/nproc > /tmp/dune2ee25e.output 2> /dev/null
-$ /home/natalia/.opam/4.07.1/bin/ocamlc.opt -config > /tmp/dune5b1fe7.output
