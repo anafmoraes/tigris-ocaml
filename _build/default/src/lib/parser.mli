@@ -5,20 +5,15 @@ type token =
   | WHILE
   | VAR
   | TYPE
-  | TO
   | TIMES
   | THEN
   | STRING of (string)
   | SEMI
   | RPAREN
   | REAL of (float)
-  | RBRACK
-  | RBRACE
   | POW
   | PLUS
   | OR
-  | OF
-  | NIL
   | NE
   | MOD
   | MINUS
@@ -27,8 +22,6 @@ type token =
   | LOGIC of (bool)
   | LET
   | LE
-  | LBRACK
-  | LBRACE
   | INTEGER of (int)
   | IN
   | IF
@@ -36,18 +29,22 @@ type token =
   | GT
   | GE
   | FUNCTION
-  | FOR
   | EQ
   | EOF
   | END
   | ELSE
-  | DOT
   | DO
   | DIV
   | COMMA
   | COLON
   | BREAK
-  | BOOL of (bool)
   | ASSIGN
-  | ARRAY
   | AND
+
+(* This exception is raised by the monolithic API functions. *)
+
+exception Error
+
+(* The monolithic API. *)
+
+val program: (Lexing.lexbuf -> token) -> Lexing.lexbuf -> (Absyn.lexp)

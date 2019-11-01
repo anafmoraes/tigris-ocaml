@@ -1,1 +1,1 @@
-src/lib/parser.mli: Symbol
+src/lib/parser.mli: Absyn Lexing Symbol
