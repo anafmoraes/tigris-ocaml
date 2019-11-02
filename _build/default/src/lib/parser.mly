@@ -52,7 +52,7 @@ exp:
  | x = LOGIC              {$loc, BoolExp x}
  | x = STRING            {$loc, StringExp x}
  | v = var                {$loc, VarExp v}
- /* | '-' e = exp %prec UMINUS {$loc, OpExp (MinusOp, ($loc, IntExp 0), e)} */
+ | "-" e = exp           {$loc, OpExp (MinusOp, ($loc, IntExp 0), e)}
  | f = exp "+" s = exp   {$loc, OpExp (PlusOp, f, s)}
  | f = exp "-" s = exp   {$loc, OpExp (MinusOp, f, s)}
  | f = exp "*" s = exp   {$loc, OpExp (TimesOp, f, s)}
